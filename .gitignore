@@ -1,0 +1,44 @@
+# Python & Virtual Environments
+backend/venv/
+backend/.env
+backend/*.db
+backend/*.sqlite3
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary snapshots (keep directory structure via .gitkeep)
+backend/static/snapshots/*.jpg
+backend/static/snapshots/*.png
+!backend/static/snapshots/.gitkeep
+backend/static/known_faces/*.jpg
+backend/static/known_faces/*.png
+!backend/static/known_faces/.gitkeep
+
+# Flutter / Dart
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/build/
+flutter_app/.pub/
+flutter_app/.pub-cache/
+
+# Android / Gradle
+flutter_app/android/.gradle
+flutter_app/android/local.properties
+flutter_app/android/**/GeneratedPluginRegistrant.java
+
+# Windows / Visual Studio
+flutter_app/windows/flutter/ephemeral/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
