@@ -12,7 +12,7 @@
  *       - Red LED (Locked / Intruder Alert): Digital Pin 6
  *       - Blue/Yellow LED (Motion Detected / Processing): Digital Pin 7
  *       - Manual Push Button (Interior Emergency Unlock): Digital Pin 3
- * 
+ *
  * Communication:
  *   - Serial via USB at 115200 baud
  *   - Simple, human-readable ASCII command protocol with newline delimiters
@@ -22,18 +22,18 @@
 #include <Servo.h>
 
 // --- Pin Definitions ---
-const int PIN_PIR       = 2;   // PIR Sensor Digital Output
-const int PIN_BUTTON    = 3;   // Interior Manual Unlock Button
-const int PIN_LED_GREEN = 5;   // Door Unlocked indicator
-const int PIN_LED_RED   = 6;   // Door Locked / Intruder indicator
-const int PIN_LED_BLUE  = 7;   // Motion Detected / Model Active indicator
-const int PIN_BUZZER    = 8;   // Passive/Active Buzzer
-const int PIN_SERVO     = 9;   // Servo Signal Pin
+const int PIN_PIR = 2;       // PIR Sensor Digital Output
+const int PIN_BUTTON = 3;    // Interior Manual Unlock Button
+const int PIN_LED_GREEN = 5; // Door Unlocked indicator
+const int PIN_LED_RED = 6;   // Door Locked / Intruder indicator
+const int PIN_LED_BLUE = 7;  // Motion Detected / Model Active indicator
+const int PIN_BUZZER = 8;    // Passive/Active Buzzer
+const int PIN_SERVO = 9;     // Servo Signal Pin
 
 // --- Servo Configuration ---
 Servo doorServo;
-const int SERVO_LOCKED_ANGLE   = 0;    // Angle when door is locked
-const int SERVO_UNLOCKED_ANGLE = 90;   // Angle when door is unlocked
+const int SERVO_LOCKED_ANGLE = 0;    // Angle when door is locked
+const int SERVO_UNLOCKED_ANGLE = 90; // Angle when door is unlocked
 
 // --- System State Variables ---
 bool isDoorLocked = true;
@@ -63,7 +63,8 @@ void handleSerialCommand(String cmd);
 void updateIndicators();
 void beep(int frequency, int durationMs);
 
-void setup() {
+void setup()
+{
   // Initialize Serial
   Serial.begin(115200);
   inputString.reserve(64);
@@ -78,10 +79,10 @@ void setup() {
 
   // Attach Servo
   doorServo.attach(PIN_SERVO);
-  
+
   // Start in secure locked state
   lockDoor(false);
-  
+
   // Power-on startup melody
   beep(1000, 100);
   delay(100);
@@ -91,13 +92,16 @@ void setup() {
   Serial.println("STATUS:DOOR:LOCKED");
 }
 
-void loop() {
+void loop()
+{
   unsigned long currentMillis = millis();
 
   // 1. Process Incoming Serial Commands from Laptop
-  if (stringComplete) {
+  if (stringComplete)
+  {
     inputString.trim();
-    if (inputString.length() > 0) {
+    if (inputString.length() > 0)
+    {
       handleSerialCommand(inputString);
     }
     inputString = "";
@@ -106,16 +110,21 @@ void loop() {
 
   // 2. Read PIR Motion Sensor
   int pirReading = digitalRead(PIN_PIR);
-  if (pirReading == HIGH) {
+  if (pirReading == HIGH)
+  {
     pirMotionStartTime = currentMillis;
-    if (!lastPirState) {
+    if (!lastPirState)
+    {
       lastPirState = true;
       digitalWrite(PIN_LED_BLUE, HIGH);
       Serial.println("EVENT:PIR_MOTION");
     }
-  } else {
+  }
+  else
+  {
     // Check if motion has cleared after debounce hold
-    if (lastPirState && (currentMillis - pirMotionStartTime >= PIR_DEBOUNCE_MS)) {
+    if (lastPirState && (currentMillis - pirMotionStartTime >= PIR_DEBOUNCE_MS))
+    {
       lastPirState = false;
       digitalWrite(PIN_LED_BLUE, LOW);
       Serial.println("EVENT:PIR_IDLE");
@@ -123,13 +132,18 @@ void loop() {
   }
 
   // 3. Interior Emergency Manual Button Check (Active LOW)
-  if (digitalRead(PIN_BUTTON) == LOW) {
+  if (digitalRead(PIN_BUTTON) == LOW)
+  {
     delay(50); // Debounce
-    if (digitalRead(PIN_BUTTON) == LOW) {
+    if (digitalRead(PIN_BUTTON) == LOW)
+    {
       Serial.println("EVENT:MANUAL_BUTTON_PRESSED");
-      if (isDoorLocked) {
+      if (isDoorLocked)
+      {
         unlockDoor(true);
-      } else {
+      }
+      else
+      {
         lockDoor(true);
       }
       delay(300); // Wait for release
@@ -137,25 +151,34 @@ void loop() {
   }
 
   // 4. Handle Auto-Lock Timer
-  if (!isDoorLocked && autoLockEnabled) {
-    if (currentMillis - unlockTimestamp >= AUTO_LOCK_DELAY_MS) {
+  if (!isDoorLocked && autoLockEnabled)
+  {
+    if (currentMillis - unlockTimestamp >= AUTO_LOCK_DELAY_MS)
+    {
       Serial.println("EVENT:AUTO_LOCK_TRIGGERED");
       lockDoor(true);
     }
   }
 
   // 5. Handle Alert Flashing if Active
-  if (isAlertActive) {
-    if (currentMillis - alertStartTime < ALERT_DURATION_MS) {
+  if (isAlertActive)
+  {
+    if (currentMillis - alertStartTime < ALERT_DURATION_MS)
+    {
       // Flash red LED and pulse buzzer
       bool flash = (currentMillis / 150) % 2 == 0;
       digitalWrite(PIN_LED_RED, flash ? HIGH : LOW);
-      if (flash) {
+      if (flash)
+      {
         tone(PIN_BUZZER, 2200, 100);
-      } else {
+      }
+      else
+      {
         noTone(PIN_BUZZER);
       }
-    } else {
+    }
+    else
+    {
       isAlertActive = false;
       noTone(PIN_BUZZER);
       updateIndicators();
@@ -164,50 +187,70 @@ void loop() {
 }
 
 // --- Serial Event Callback ---
-void serialEvent() {
-  while (Serial.available()) {
+void serialEvent()
+{
+  while (Serial.available())
+  {
     char inChar = (char)Serial.read();
-    if (inChar == '\n' || inChar == '\r') {
-      if (inputString.length() > 0) {
+    if (inChar == '\n' || inChar == '\r')
+    {
+      if (inputString.length() > 0)
+      {
         stringComplete = true;
       }
-    } else {
+    }
+    else
+    {
       inputString += inChar;
     }
   }
 }
 
 // --- Command Dispatcher ---
-void handleSerialCommand(String cmd) {
+void handleSerialCommand(String cmd)
+{
   cmd.toUpperCase();
 
-  if (cmd == "CMD:UNLOCK" || cmd == "UNLOCK") {
+  if (cmd == "CMD:UNLOCK" || cmd == "UNLOCK")
+  {
     unlockDoor(true);
-  } else if (cmd == "CMD:LOCK" || cmd == "LOCK") {
+  }
+  else if (cmd == "CMD:LOCK" || cmd == "LOCK")
+  {
     lockDoor(true);
-  } else if (cmd == "CMD:ALERT" || cmd == "ALERT") {
+  }
+  else if (cmd == "CMD:ALERT" || cmd == "ALERT")
+  {
     triggerAlert();
-  } else if (cmd == "CMD:STATUS" || cmd == "STATUS") {
+  }
+  else if (cmd == "CMD:STATUS" || cmd == "STATUS")
+  {
     Serial.print("STATUS:DOOR:");
     Serial.println(isDoorLocked ? "LOCKED" : "UNLOCKED");
     Serial.print("STATUS:PIR:");
     Serial.println(lastPirState ? "ACTIVE" : "IDLE");
-  } else if (cmd == "CMD:PING" || cmd == "PING") {
+  }
+  else if (cmd == "CMD:PING" || cmd == "PING")
+  {
     Serial.println("PONG");
-  } else {
+  }
+  else
+  {
     Serial.print("ERROR:UNKNOWN_COMMAND:");
     Serial.println(cmd);
   }
 }
 
 // --- Hardware Actions ---
-void unlockDoor(bool playSound) {
+void unlockDoor(bool playSound)
+{
   isDoorLocked = false;
   doorServo.write(SERVO_UNLOCKED_ANGLE);
   unlockTimestamp = millis();
   updateIndicators();
-  
-  if (playSound) {
+
+  if (playSound)
+  {
     beep(1200, 80);
     delay(50);
     beep(1800, 120);
@@ -215,35 +258,43 @@ void unlockDoor(bool playSound) {
   Serial.println("STATUS:DOOR:UNLOCKED");
 }
 
-void lockDoor(bool playSound) {
+void lockDoor(bool playSound)
+{
   isDoorLocked = true;
   doorServo.write(SERVO_LOCKED_ANGLE);
   updateIndicators();
-  
-  if (playSound) {
+
+  if (playSound)
+  {
     beep(800, 150);
   }
   Serial.println("STATUS:DOOR:LOCKED");
 }
 
-void triggerAlert() {
+void triggerAlert()
+{
   isAlertActive = true;
   alertStartTime = millis();
   Serial.println("STATUS:ALERT_STARTED");
 }
 
-void updateIndicators() {
-  if (isDoorLocked) {
+void updateIndicators()
+{
+  if (isDoorLocked)
+  {
     digitalWrite(PIN_LED_GREEN, LOW);
     digitalWrite(PIN_LED_RED, HIGH);
-  } else {
+  }
+  else
+  {
     digitalWrite(PIN_LED_GREEN, HIGH);
     digitalWrite(PIN_LED_RED, LOW);
   }
 }
 
-void beep(int frequency, int durationMs) {
-  tone(PIN_BUZZER, frequency, durationMs);
+void beep(int frequency, int durationMs)
+{
+  digitalWrite(PIN_BUZZER, HIGH);
   delay(durationMs);
-  noTone(PIN_BUZZER);
+  digitalWrite(PIN_BUZZER, LOW);
 }
