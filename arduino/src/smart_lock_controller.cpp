@@ -67,7 +67,7 @@ void beep(int frequency, int durationMs);
 void setup()
 {
   // Initialize Serial
-  Serial.begin(115200);
+  Serial.begin(9600);
   inputString.reserve(64);
 
   // Initialize Pins
