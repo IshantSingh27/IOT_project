@@ -1,4 +1,6 @@
+<!-- "C:\Users\Ishant\AppData\Local\Android\Sdk\platform-tools\adb.exe -->
 # 🛡️ Smart IoT Home Security & AI Edge Vision System
+
 
 An end-to-end Smart Home Security and Automated Access Control System integrating an **Arduino Edge Hardware Node**, a **Laptop-hosted Edge AI Vision & FastAPI Hub**, and a **Flutter Mobile Application**.
 
