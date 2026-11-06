@@ -1,6 +1,6 @@
 class ApiConstants {
   // Default host (Use 10.0.2.2 for Android Emulator, localhost for Windows/Web, or your Laptop IP)
-  static const String defaultBaseUrl = "http://127.0.0.1:8000";
+  static const String defaultBaseUrl = "https://iot-project-5dgn.onrender.com";
 
   // Auth endpoints
   static const String login = "/api/auth/login";
